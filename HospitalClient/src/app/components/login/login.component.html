@@ -1,0 +1,94 @@
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-5">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+          <!-- Card Header / Brand -->
+          <div class="bg-primary text-white text-center p-4">
+            <div class="display-6 mb-2">
+              <i class="bi bi-hospital-fill"></i>
+            </div>
+            <h3 class="fw-bold mb-1">MedCare HMS</h3>
+            <p class="small text-white-50 mb-0">Hospital Management System</p>
+          </div>
+
+          <!-- Card Body -->
+          <div class="card-body p-4 p-md-5">
+            <h4 class="fw-semibold text-center mb-4 text-secondary">Sign In to Your Account</h4>
+
+            <!-- Alert message -->
+            <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+              <i class="bi bi-exclamation-circle-fill me-2"></i>{{ errorMessage }}
+            </div>
+
+            <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+              <!-- Email Field -->
+              <div class="mb-3">
+                <label for="email" class="form-label fw-medium text-muted">Email Address</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-white border-end-0 text-muted">
+                    <i class="bi bi-envelope"></i>
+                  </span>
+                  <input
+                    type="email"
+                    class="form-control border-start-0 ps-0"
+                    id="email"
+                    name="email"
+                    [(ngModel)]="loginData.email"
+                    placeholder="name@hospital.com"
+                    required
+                    email
+                    #emailInput="ngModel"
+                    [class.is-invalid]="emailInput.invalid && emailInput.touched"
+                  />
+                </div>
+              </div>
+
+              <!-- Password Field -->
+              <div class="mb-4">
+                <label for="password" class="form-label fw-medium text-muted">Password</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-white border-end-0 text-muted">
+                    <i class="bi bi-lock"></i>
+                  </span>
+                  <input
+                    type="password"
+                    class="form-control border-start-0 ps-0"
+                    id="password"
+                    name="password"
+                    [(ngModel)]="loginData.password"
+                    placeholder="Enter your password"
+                    required
+                    #passInput="ngModel"
+                    [class.is-invalid]="passInput.invalid && passInput.touched"
+                  />
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <button
+                type="submit"
+                class="btn btn-primary w-100 py-2 fs-6 fw-semibold shadow-sm"
+                [disabled]="loading || loginForm.invalid"
+              >
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <i *ngIf="!loading" class="bi bi-box-arrow-in-right me-2"></i>
+                {{ loading ? 'Signing in...' : 'Sign In' }}
+              </button>
+            </form>
+
+            <!-- Register link -->
+            <div class="text-center mt-4 pt-2 border-top">
+              <p class="text-muted mb-0">
+                Don't have an account?
+                <a routerLink="/register" class="text-primary fw-semibold text-decoration-none ms-1">
+                  Create Account
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

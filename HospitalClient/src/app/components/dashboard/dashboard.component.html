@@ -1,0 +1,203 @@
+<div class="container-fluid p-4">
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Hospital Dashboard</h2>
+      <p class="text-muted mb-0">
+        Welcome back, <span class="fw-semibold text-primary">{{ authService.currentUser()?.fullName || 'User' }}</span> ({{ authService.currentUser()?.role || 'Staff' }})
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary" (click)="loadStats()">
+        <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+      </button>
+      <a routerLink="/appointments" class="btn btn-primary">
+        <i class="bi bi-calendar-plus me-1"></i> Book Appointment
+      </a>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center my-5 py-5">
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-3">Loading dashboard analytics...</p>
+  </div>
+
+  <!-- Error Alert -->
+  <div *ngIf="errorMessage && !loading" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMessage }}
+    <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+  </div>
+
+  <!-- Stats Content -->
+  <div *ngIf="!loading">
+    <!-- Analytics Metric Cards -->
+    <div class="row g-3 mb-4">
+      <!-- Total Doctors -->
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card stat-card bg-primary text-white h-100 shadow-sm">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="text-white-50 text-uppercase fw-semibold small mb-1">Total Doctors</p>
+              <h2 class="fw-bold mb-0">{{ stats.totalDoctors }}</h2>
+            </div>
+            <div class="stat-icon">
+              <i class="bi bi-person-badge"></i>
+            </div>
+          </div>
+          <div class="mt-3 pt-2 border-top border-white-50">
+            <a routerLink="/doctors" class="text-white text-decoration-none small fw-medium">
+              View all doctors <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Patients -->
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card stat-card bg-success text-white h-100 shadow-sm">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="text-white-50 text-uppercase fw-semibold small mb-1">Total Patients</p>
+              <h2 class="fw-bold mb-0">{{ stats.totalPatients }}</h2>
+            </div>
+            <div class="stat-icon">
+              <i class="bi bi-people-fill"></i>
+            </div>
+          </div>
+          <div class="mt-3 pt-2 border-top border-white-50">
+            <a routerLink="/patients" class="text-white text-decoration-none small fw-medium">
+              View all patients <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Appointments -->
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card stat-card bg-info text-white h-100 shadow-sm">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="text-white-50 text-uppercase fw-semibold small mb-1">Total Appointments</p>
+              <h2 class="fw-bold mb-0">{{ stats.totalAppointments }}</h2>
+            </div>
+            <div class="stat-icon">
+              <i class="bi bi-calendar-check"></i>
+            </div>
+          </div>
+          <div class="mt-3 pt-2 border-top border-white-50">
+            <a routerLink="/appointments" class="text-white text-decoration-none small fw-medium">
+              View appointments <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Appointments -->
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card stat-card bg-warning text-dark h-100 shadow-sm">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="text-dark-50 text-uppercase fw-semibold small mb-1">Today's Appointments</p>
+              <h2 class="fw-bold mb-0">{{ stats.todayAppointments }}</h2>
+            </div>
+            <div class="stat-icon text-dark">
+              <i class="bi bi-clock-history"></i>
+            </div>
+          </div>
+          <div class="mt-3 pt-2 border-top border-dark-subtle">
+            <span class="small fw-medium">Scheduled for today</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Shortcuts & Recent Activity -->
+    <div class="row g-4 mb-4">
+      <!-- Quick Action Cards -->
+      <div class="col-12 col-lg-4">
+        <div class="card custom-card h-100">
+          <div class="card-header bg-white border-0 pt-3 pb-0">
+            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-lightning-charge text-warning me-2"></i>Quick Actions</h5>
+          </div>
+          <div class="card-body d-flex flex-column gap-2">
+            <a routerLink="/doctors" class="btn btn-outline-primary d-flex align-items-center p-3 text-start">
+              <i class="bi bi-person-plus fs-4 me-3 text-primary"></i>
+              <div>
+                <div class="fw-bold">Manage Doctors</div>
+                <small class="text-muted">Add, view or edit doctor profiles</small>
+              </div>
+            </a>
+
+            <a routerLink="/patients" class="btn btn-outline-success d-flex align-items-center p-3 text-start">
+              <i class="bi bi-person-vcard fs-4 me-3 text-success"></i>
+              <div>
+                <div class="fw-bold">Manage Patients</div>
+                <small class="text-muted">Register and view patient records</small>
+              </div>
+            </a>
+
+            <a routerLink="/appointments" class="btn btn-outline-info d-flex align-items-center p-3 text-start">
+              <i class="bi bi-calendar-event fs-4 me-3 text-info"></i>
+              <div>
+                <div class="fw-bold">Manage Appointments</div>
+                <small class="text-muted">Schedule, update and track visits</small>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Appointments Table -->
+      <div class="col-12 col-lg-8">
+        <div class="card custom-card h-100">
+          <div class="card-header bg-white border-0 pt-3 pb-2 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-clock text-primary me-2"></i>Recent Appointments</h5>
+            <a routerLink="/appointments" class="btn btn-sm btn-link text-decoration-none">View All</a>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of stats.recentAppointments">
+                    <td>
+                      <div class="fw-semibold text-dark">{{ item.patient?.name || 'Patient #' + item.patientId }}</div>
+                      <small class="text-muted">{{ item.patient?.phone }}</small>
+                    </td>
+                    <td>
+                      <div class="fw-semibold">{{ item.doctor?.name || 'Doctor #' + item.doctorId }}</div>
+                      <small class="text-muted">{{ item.doctor?.specialization }}</small>
+                    </td>
+                    <td>
+                      <div>{{ item.appointmentDate | date:'mediumDate' }}</div>
+                      <small class="text-muted">{{ item.appointmentTime }}</small>
+                    </td>
+                    <td>
+                      <span [class]="getStatusBadgeClass(item.status)">{{ item.status }}</span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="stats.recentAppointments.length === 0">
+                    <td colspan="4" class="text-center py-4 text-muted">
+                      <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                      No appointments booked yet.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

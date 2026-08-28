@@ -1,0 +1,252 @@
+<div class="container-fluid p-4">
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">Appointment Management</h2>
+      <p class="text-muted mb-0">Schedule patient consultations, update visit status and manage calendar.</p>
+    </div>
+    <div>
+      <button class="btn btn-primary shadow-sm" (click)="openAddModal()">
+        <i class="bi bi-calendar-plus me-1"></i> Book New Appointment
+      </button>
+    </div>
+  </div>
+
+  <!-- Success Notification Alert -->
+  <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+    <i class="bi bi-check-circle-fill me-2"></i>{{ successMessage }}
+    <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+  </div>
+
+  <!-- Filters Bar -->
+  <div class="card custom-card mb-4">
+    <div class="card-body p-3">
+      <div class="row g-3 align-items-end">
+        <!-- Status Filter -->
+        <div class="col-12 col-sm-6 col-md-4">
+          <label class="form-label small fw-semibold text-muted mb-1">Filter by Status</label>
+          <select class="form-select" [(ngModel)]="statusFilter" (change)="onFilterChange()">
+            <option value="">All Statuses</option>
+            <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+
+        <!-- Date Filter -->
+        <div class="col-12 col-sm-6 col-md-4">
+          <label class="form-label small fw-semibold text-muted mb-1">Filter by Date</label>
+          <input type="date" class="form-control" [(ngModel)]="dateFilter" (change)="onFilterChange()" />
+        </div>
+
+        <!-- Actions -->
+        <div class="col-12 col-md-4 d-flex gap-2">
+          <button class="btn btn-outline-secondary flex-grow-1" (click)="clearFilters()">
+            <i class="bi bi-x-circle me-1"></i> Reset Filters
+          </button>
+          <button class="btn btn-outline-primary" (click)="loadAppointments()">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center my-5 py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-2">Loading appointments...</p>
+  </div>
+
+  <!-- Appointments Table View -->
+  <div *ngIf="!loading" class="card custom-card overflow-hidden">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Appt #</th>
+            <th>Patient Details</th>
+            <th>Doctor Specialist</th>
+            <th>Date & Slot</th>
+            <th>Reason / Symptoms</th>
+            <th>Status</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let appt of appointments">
+            <td>
+              <span class="badge bg-light text-dark border fw-bold">#{{ appt.id }}</span>
+            </td>
+            <td>
+              <div class="fw-bold text-dark">{{ appt.patient?.name || 'Patient #' + appt.patientId }}</div>
+              <small class="text-muted"><i class="bi bi-telephone me-1"></i>{{ appt.patient?.phone }}</small>
+            </td>
+            <td>
+              <div class="fw-semibold text-primary">{{ appt.doctor?.name || 'Doctor #' + appt.doctorId }}</div>
+              <small class="text-muted">{{ appt.doctor?.specialization }} ({{ appt.doctor?.department }})</small>
+            </td>
+            <td>
+              <div class="fw-medium text-dark"><i class="bi bi-calendar3 me-1 text-muted"></i>{{ appt.appointmentDate | date:'mediumDate' }}</div>
+              <small class="text-muted"><i class="bi bi-clock me-1 text-muted"></i>{{ appt.appointmentTime }}</small>
+            </td>
+            <td>
+              <div class="text-dark">{{ appt.reason || 'General Consultation' }}</div>
+              <small class="text-muted" *ngIf="appt.notes">Note: {{ appt.notes }}</small>
+            </td>
+            <td>
+              <div class="dropdown">
+                <button
+                  class="btn btn-sm dropdown-toggle"
+                  [ngClass]="getStatusBadgeClass(appt.status)"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  {{ appt.status }}
+                </button>
+                <ul class="dropdown-menu shadow-sm">
+                  <li><h6 class="dropdown-header">Change Status</h6></li>
+                  <li *ngFor="let st of statuses">
+                    <a class="dropdown-item" href="javascript:void(0)" (click)="updateAppointmentStatus(appt.id, st)">
+                      Mark as {{ st }}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </td>
+            <td class="text-end pe-4">
+              <button class="btn btn-sm btn-outline-primary me-2" (click)="openEditModal(appt)" title="Edit">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" (click)="deleteAppointment(appt)" title="Cancel/Delete">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="appointments.length === 0">
+            <td colspan="7" class="text-center py-5 text-muted">
+              <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
+              No appointments found. Click "Book New Appointment" to create one.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Book / Edit Appointment Modal -->
+  <div class="modal fade show d-block" *ngIf="showModal" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 rounded-4 shadow">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold">
+            <i class="bi" [ngClass]="isEditing ? 'bi-pencil-square' : 'bi-calendar-plus-fill'"></i>
+            {{ isEditing ? 'Edit Appointment' : 'Book New Appointment' }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
+        </div>
+
+        <form (ngSubmit)="saveAppointment()" #form="ngForm">
+          <div class="modal-body p-4">
+            <div *ngIf="errorMessage" class="alert alert-danger mb-3">
+              <i class="bi bi-exclamation-circle me-1"></i>{{ errorMessage }}
+            </div>
+
+            <div class="row g-3">
+              <!-- Select Patient -->
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-medium text-muted">Select Patient *</label>
+                <select class="form-select" [(ngModel)]="appointmentForm.patientId" name="patientId" required>
+                  <option [ngValue]="0" disabled>-- Choose Patient --</option>
+                  <option *ngFor="let p of patients" [ngValue]="p.id">
+                    {{ p.name }} (Phone: {{ p.phone }})
+                  </option>
+                </select>
+                <div *ngIf="patients.length === 0" class="small text-danger mt-1">
+                  No patients found. Please register a patient first.
+                </div>
+              </div>
+
+              <!-- Select Doctor -->
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-medium text-muted">Select Doctor *</label>
+                <select class="form-select" [(ngModel)]="appointmentForm.doctorId" name="doctorId" required>
+                  <option [ngValue]="0" disabled>-- Choose Doctor --</option>
+                  <option *ngFor="let d of doctors" [ngValue]="d.id">
+                    {{ d.name }} - {{ d.specialization }} (₹{{ d.consultationFee }})
+                  </option>
+                </select>
+                <div *ngIf="doctors.length === 0" class="small text-danger mt-1">
+                  No doctors found. Please add a doctor first.
+                </div>
+              </div>
+
+              <!-- Appointment Date -->
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-medium text-muted">Appointment Date *</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  [(ngModel)]="appointmentForm.appointmentDate"
+                  name="appointmentDate"
+                  required
+                />
+              </div>
+
+              <!-- Appointment Time Slot -->
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-medium text-muted">Preferred Time Slot *</label>
+                <select class="form-select" [(ngModel)]="appointmentForm.appointmentTime" name="appointmentTime" required>
+                  <option *ngFor="let slot of timeSlots" [value]="slot">{{ slot }}</option>
+                </select>
+              </div>
+
+              <!-- Status -->
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-medium text-muted">Appointment Status</label>
+                <select class="form-select" [(ngModel)]="appointmentForm.status" name="status">
+                  <option *ngFor="let st of statuses" [value]="st">{{ st }}</option>
+                </select>
+              </div>
+
+              <!-- Reason -->
+              <div class="col-12 col-md-6">
+                <label class="form-label fw-medium text-muted">Reason for Visit</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="appointmentForm.reason"
+                  name="reason"
+                  placeholder="e.g. Chest pain, Routine Checkup, Follow-up"
+                />
+              </div>
+
+              <!-- Doctor/Staff Notes -->
+              <div class="col-12">
+                <label class="form-label fw-medium text-muted">Staff Notes / Instructions</label>
+                <textarea
+                  class="form-control"
+                  rows="2"
+                  [(ngModel)]="appointmentForm.notes"
+                  name="notes"
+                  placeholder="e.g. Fasting required before blood work..."
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-outline-secondary" (click)="closeModal()" [disabled]="saving">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving || form.invalid || appointmentForm.patientId === 0 || appointmentForm.doctorId === 0">
+              <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+              {{ isEditing ? 'Update Appointment' : 'Book Appointment' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
